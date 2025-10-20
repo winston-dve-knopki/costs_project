@@ -1,4 +1,23 @@
-        name: Deploy to Server via SSH
+# .github/workflows/deploy.yml
+
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ШАГ 1: Клонируем репозиторий на виртуальную машину GitHub Actions
+      # Этот шаг обязателен, чтобы Action имел доступ к файлам репозитория.
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Используем стандартный action для этого
+      # Этот шаг обязателен, чтобы Action имел доступ к файлам репозитория.
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -6,23 +25,35 @@
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           
           script: |
+            # Переходим в директорию с проектом
             cd ~/costs_project
 
+            # Обновляем код из репозитория GitHub
             echo ">>> Pulling latest code..."
             git pull origin main
 
+            # Создаем .env файл с секретами
             echo ">>> Creating/Updating .env file..."
             echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             
+            # --------------------- НОВЫЙ ВАЖНЫЙ ШАГ ---------------------
+            # Полностью останавливаем и удаляем старые контейнеры 'app' и 'bot'
+            # Это очистит любое "повисшее" состояние. Базу данных (db) мы не трогаем.
             echo ">>> Stopping and removing old containers..."
             docker-compose rm -s -f app bot
+            # -------------------------------------------------------------
 
+            # Пересобираем Docker-образы для измененных сервисов
             echo ">>> Building new images..."
             docker-compose build app bot
 
+            # Запускаем всю систему. 
+            # Docker Compose достаточно умен, чтобы не трогать уже работающий 'db',
+            # а 'app' и 'bot' он создаст заново, так как мы их удалили.
             echo ">>> Starting services..."
             docker-compose up -d
 
+            # Очищаем старые, неиспользуемые Docker-образы
             echo ">>> Pruning old Docker images..."
             docker image prune -a -f
