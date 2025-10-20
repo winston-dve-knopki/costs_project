@@ -10,35 +10,23 @@
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           
           script: |
-            # Переходим в директорию с проектом
             cd ~/costs_project
 
-            # Обновляем код из репозитория GitHub
             echo ">>> Pulling latest code..."
             git pull origin main
 
-            # Создаем .env файл с секретами
             echo ">>> Creating/Updating .env file..."
             echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             
-            # --------------------- НОВЫЙ ВАЖНЫЙ ШАГ ---------------------
-            # Полностью останавливаем и удаляем старые контейнеры 'app' и 'bot'
-            # Это очистит любое "повисшее" состояние. Базу данных (db) мы не трогаем.
             echo ">>> Stopping and removing old containers..."
             docker-compose rm -s -f app bot
-            # -------------------------------------------------------------
 
-            # Пересобираем Docker-образы для измененных сервисов
             echo ">>> Building new images..."
             docker-compose build app bot
 
-            # Запускаем всю систему. 
-            # Docker Compose достаточно умен, чтобы не трогать уже работающий 'db',
-            # а 'app' и 'bot' он создаст заново, так как мы их удалили.
             echo ">>> Starting services..."
             docker-compose up -d
 
-            # Очищаем старые, неиспользуемые Docker-образы
             echo ">>> Pruning old Docker images..."
             docker image prune -a -f
