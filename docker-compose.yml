@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: cost_tracker_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=cost_project_user
+      - POSTGRES_PASSWORD=6796976
+      - POSTGRES_DB=cost_project_db
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: cost_tracker_api
+    command: sh -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"
+
+    ports:
+      - "8000:8000"
+    
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://cost_project_user:6796976@db/cost_project_db
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    container_name: cost_tracker_bot
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - API_URL=http://app:8000/api/v1
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

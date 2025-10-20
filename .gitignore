@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*build/
+*dist/
+
+# Виртуальное окружение
+project_venv/
+venv/
+env/
+
+# Файлы IDE
+.idea/
+.vscode/
+
+# Файл с переменными окружения (САМОЕ ВАЖНОЕ!)
+.env
+
+# Локальные файлы Docker
+.dockerignore
+docker-compose.override.yml
+
+# Файлы Alembic (кроме папки versions)
+# alembic.ini можно добавить, если там нет секретов,
+# но часто его тоже игнорируют и создают на сервере.
+# Мы его пока оставим.
+
+# Логи
+*.log
