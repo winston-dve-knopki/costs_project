@@ -1,0 +1,37 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+          script: |
+            cd ~/costs_project
+
+            echo ">>> Pulling latest code..."
+            git pull origin main
+
+            echo ">>> Creating .env file..."
+            echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
+            echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            
+            echo ">>> Building new images..."
+            docker-compose build --no-cache app bot
+
+            echo ">>> Restarting services..."
+            docker-compose up -d
+
+            echo ">>> Pruning old images..."
+            docker image prune -f
