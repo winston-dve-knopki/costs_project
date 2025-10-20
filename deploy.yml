@@ -10,8 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -23,7 +26,7 @@ jobs:
             echo ">>> Pulling latest code..."
             git pull origin main
 
-            echo ">>> Creating .env file..."
+            echo ">>> Creating/Updating .env file..."
             echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" > .env
             echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             
@@ -31,7 +34,7 @@ jobs:
             docker-compose build --no-cache app bot
 
             echo ">>> Restarting services..."
-            docker-compose up -d
+            docker-compose up -d --force-recreate --no-deps app bot
 
-            echo ">>> Pruning old images..."
-            docker image prune -f
+            echo ">>> Pruning old Docker images..."
+            docker image prune -a -f
