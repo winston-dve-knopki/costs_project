@@ -40,6 +40,45 @@ async def handle_start(message: Message):
         parse_mode="Markdown"
     )
 
+
+@dp.message(Command("history"))
+@handle_api_errors
+async def lookup_transactions(message: types.Message, command: CommandObject):
+    if command.args is None:
+        limit = 10
+    else:
+        limit = int(command.args)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{API_URL}/transactions?limit={limit}"
+        )
+    response.raise_for_status()
+    print(response.json())
+    transaction_table = create_transaction_table(response.json())
+    await message.answer(transaction_table, parse_mode="HTML")
+
+
+@dp.message(Command("remove"))
+@handle_api_errors
+async def remove_transactions(message: types.Message, command: CommandObject):
+    if command.args is None:
+        raise ParseError("Не были переданы транзакции для удаления")
+    else:
+        try:
+            ids_to_delete = [int(el) for el in command.args.split()]
+        except Exception as e:
+            raise ParseError("ID переданы в неверном формате")
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(
+            f"{API_URL}/transactions?ids_to_delete={ids_to_delete}"
+        )
+    response.raise_for_status()
+
+    await message.answer("Транзакции удалены")
+
+
 @dp.message(F.text)
 @handle_api_errors
 async def handle_expense_message(message: Message):
@@ -70,45 +109,6 @@ async def handle_expense_message(message: Message):
         response.raise_for_status()
 
     await message.answer("Расход записан!")
-
-
-@dp.message(Command("history"))
-@handle_api_errors
-async def lookup_transactions(message: types.Message, command: CommandObject):
-    if command.args is None:
-        limit = 10
-    else:
-        limit = int(command.args)
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{API_URL}/transactions?limit={limit}"
-        )
-    response.raise_for_status()
-    
-    transaction_table = create_transaction_table(response)
-    await message.answer(transaction_table, parse_mode="HTML")
-
-
-@dp.message(Command("remove"))
-@handle_api_errors
-async def remove_transactions(message: types.Message, command: CommandObject):
-    if command.args is None:
-        raise ParseError("Не были переданы транзакции для удаления")
-    else:
-        try:
-            ids_to_delete = [int(el) for el in command.args]
-        except Exception as e:
-            raise ParseError("ID переданы в неверном формате")
-    
-    async with httpx.AsyncClient() as client:
-        response = await client.delete(
-            f"{API_URL}/transactions?ids_to_delete={ids_to_delete}"
-        )
-    response.raise_for_status()
-
-    await message.answer("Транзакции удалены")
-
 
 async def main():
     await dp.start_polling(bot)

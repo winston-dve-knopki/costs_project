@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime, timezone
 from src.database.models import TransactionType
@@ -18,6 +18,7 @@ class CostCreate(BaseModelAttr):
 
 
 class CostRead(BaseModelAttr):
+    model_config = ConfigDict(from_attributes=True)
     transaction_id: int
     user_id: int
     description: str

@@ -67,7 +67,9 @@ async def read_transactions(
     if transaction_type:
         query = query.where(Transaction.transaction_type == transaction_type)
     result = await session.execute(query)
-    return result.scalars().all()
+    result_lst = result.scalars().all()
+    print(result_lst)
+    return result_lst
 
 @router.delete("/transactions", response_model=List[schemas.CostRead])
 async def delete_transactions(

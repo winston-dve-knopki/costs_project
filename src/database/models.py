@@ -11,7 +11,7 @@ str_255 = Annotated[str, mapped_column(String(255))]
 
 class TransactionType(PyEnum):
     INCOME = 'income'
-    COST = 'cost'
+    COST = 'expense'
 
 class Transaction(Base):
     __tablename__ = 'transactions'

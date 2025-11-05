@@ -78,22 +78,25 @@ def parse_expense_message(text: str) -> tp.Dict[str, tp.Any]:
     )
     
     match = date_pattern.search(text)
-    day_str, month_name, month_num_str = match.groups()
-    
-    day = int(day_str)
-    month = 0
-    
-    if month_name:
-        month = MONTHS[month_name.lower()]
-    elif month_num_str:
-        month = int(month_num_str)
+    if match:
+        day_str, month_name, month_num_str = match.groups()
         
-    if month:
-        year = datetime.now().year
-        try:
-            date = datetime(year, month, day).date()
-        except ValueError:
-            raise ValueError("Ты пытался указать дату, но формат невалидный")
+        day = int(day_str)
+        month = 0
+    
+        if month_name:
+            month = MONTHS[month_name.lower()]
+        elif month_num_str:
+            month = int(month_num_str)
+            
+        if month:
+            year = datetime.now().year
+            try:
+                date = datetime(year, month, day).date()
+            except ValueError:
+                raise ValueError("Ты пытался указать дату, но формат невалидный")
+        else:
+            date = None
     else:
         date = None
 
@@ -112,22 +115,21 @@ def parse_expense_message(text: str) -> tp.Dict[str, tp.Any]:
 def create_transaction_table(transactions):
     if not transactions:
         return "У вас пока нет ни одной записи."
-
     table = PrettyTable()
-
+    print(transactions)
     table.field_names = ["ID", "Тип", "Сумма", "Описание", "Дата"]
 
     table.align["Сумма"] = "r"
     table.align["Описание"] = "l"
 
     for tr in transactions:
-        type_emoji = "🔴" if tr['type'] == 'expense' else "🟢"
+        type_emoji = "🔴" if tr['transaction_type'] == 'expense' else "🟢"
 
-        formatted_date = tr['date'].strftime('%d.%m.%Y') if tr.get('date') else "---"
-        formatted_amount = f"{tr['amount']:.2f}"
+        formatted_date = tr['transaction_dttm'].strftime('%d.%m.%Y') if tr.get('date') else "---"
+        formatted_amount = f"{int(tr['amount'])}"
         
         table.add_row([
-            tr['id'],
+            tr['transaction_id'],
             type_emoji,
             formatted_amount,
             tr['description'],
