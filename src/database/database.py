@@ -21,3 +21,5 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 class Base(DeclarativeBase):
     pass
+
+SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")

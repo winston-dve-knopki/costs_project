@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timezone
+from src.database.models import TransactionType
 
 class BaseModelAttr(BaseModel):
     pass
@@ -11,6 +12,7 @@ class CostCreate(BaseModelAttr):
     description: str
     category: Optional[str]
     amount: int
+    transaction_type: TransactionType
     raw_text: Optional[str] = None
     transaction_dttm: datetime
 
@@ -19,6 +21,7 @@ class CostRead(BaseModelAttr):
     transaction_id: int
     user_id: int
     description: str
+    transaction_type: TransactionType
     category: Optional[str]
     amount: int
     raw_text: Optional[str] = None

@@ -36,5 +36,18 @@ services:
       - app
     restart: unless-stopped
 
+  backup:
+    build: ./backup
+    container_name: my_project_backup
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=cost_project_user
+      - POSTGRES_PASSWORD=6796976
+      - POSTGRES_DB=cost_project_db
+      - YADISK_TOKEN=${YADISK_TOKEN}
+    depends_on:
+      - db
+    restart: always
+
 volumes:
   postgres_data:
