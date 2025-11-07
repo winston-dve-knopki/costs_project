@@ -18,6 +18,7 @@ env/
 # Файл с переменными окружения (САМОЕ ВАЖНОЕ!)
 .env
 
+
 # Локальные файлы Docker
 .dockerignore
 docker-compose.override.yml
@@ -26,6 +27,6 @@ docker-compose.override.yml
 # alembic.ini можно добавить, если там нет секретов,
 # но часто его тоже игнорируют и создают на сервере.
 # Мы его пока оставим.
-
+test.ipynb
 # Логи
 *.log

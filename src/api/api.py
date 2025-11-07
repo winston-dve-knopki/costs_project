@@ -54,7 +54,7 @@ async def read_transactions(
     if sort not in allowed_columns:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid sort column. Allowed: {', '.join(allowed_columns)}"
+            detail=f"Invalid sort column {sort}. Allowed: {', '.join(allowed_columns)}"
         )
     query = select(Transaction).where(
         Transaction.transaction_dttm >= date_from,
